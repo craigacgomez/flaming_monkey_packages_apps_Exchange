@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
+import android.os.SystemProperties;
 
 import com.android.emailcommon.provider.Policy;
 import com.android.exchange.EasSyncService;
@@ -69,6 +70,10 @@ public class ProvisionParser extends Parser {
     }
 
     public boolean hasSupportablePolicySet() {
+        // force policy set as supportable
+        if (isExchangeSecurityDisabled()) {
+            mIsSupportable = true;
+        }
         return (mPolicy != null) && mIsSupportable;
     }
 
@@ -80,6 +85,15 @@ public class ProvisionParser extends Parser {
     private void addPolicyString(StringBuilder sb, int res) {
         sb.append(mResources.getString(res));
         sb.append(Policy.POLICY_STRING_DELIMITER);
+    }
+
+    /**
+     * Check if Exchange security policy requirements are enabled
+     */
+    private boolean isExchangeSecurityDisabled() {
+        int exchangeSecurityDisabled = SystemProperties.getInt("exchange.security.disabled", 0);
+        boolean isExchangeSecurityDisabled = (exchangeSecurityDisabled == 0 ? false : true);
+        return isExchangeSecurityDisabled;
     }
 
     /**
